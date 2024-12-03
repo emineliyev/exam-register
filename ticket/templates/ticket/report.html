@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+Hesabat
+{% endblock %}
+{% block content %}
+<select class="form-select mb-2" id="examSelect" aria-label="İmtahan seçin">
+    <option selected>İmtahan seçin</option>
+    {% for exam in exams %}
+    <option value="{{ exam.id }}">{{ exam.name }}</option>
+    {% endfor %}
+</select>
+
+
+
+<select class="form-select mb-2" id="examTypeSelect" aria-label="Тип экзамена">
+    <option selected>İmtahan növü</option>
+</select>
+
+<form method="get" action="{% url 'ticket:export_to_excel' %}">
+    <input type="hidden" name="exam" id="selectedExam">
+    <input type="hidden" name="exam_type" id="selectedExamType">
+    <button type="submit" class="btn btn-primary">Export</button>
+</form>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('#examSelect').change(function () {
+            var examId = $(this).val();
+            if (examId) {
+                $.ajax({
+                    url: '{% url "ticket:load_exam_type_report" %}',
+                    data: {
+                        'exam': examId
+                    },
+                    success: function (data) {
+                        $('#examTypeSelect').empty();  // Очистить старые значения
+                        $('#examTypeSelect').append('<option selected>İmtahan növü</option>'); // Опция по умолчанию
+                        $.each(data, function (index, examType) {
+                            $('#examTypeSelect').append('<option value="' + examType.id + '">' + examType.name + '</option>');
+                        });
+                    }
+                });
+            } else {
+                $('#examTypeSelect').empty();
+                $('#examTypeSelect').append('<option selected>İmtahan növü</option>');
+            }
+        });
+    });
+
+    $('#examSelect').change(function () {
+        $('#selectedExam').val($(this).val());
+    });
+    $('#examTypeSelect').change(function () {
+        $('#selectedExamType').val($(this).val());
+    });
+</script>
+
+{% endblock %}

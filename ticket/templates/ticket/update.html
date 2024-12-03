@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+	{{ ticket.first_name }} {{ ticket.last_name }}
+{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="d-flex justify-content-between">
+                <div class="d-flex flex-column flex-grow-1 me-2">
+                    <label class="form-label" for="{{ form.first_name.id_for_label }}">Ad
+                        {{ form.first_name }}
+                    </label>
+
+                    <label class="form-label" for="{{ form.last_name.id_for_label }}">Soyad
+                        {{ form.last_name }}
+                    </label>
+
+                    <label class="form-label" for="{{ form.gender.id_for_label }}">Cinsiyyət
+                        {{ form.gender }}
+                    </label>
+
+                    <label class="form-label" for="{{ form.grader.id_for_label }}">Sinif
+                        {{ form.grader }}
+                    </label>
+
+                    <label class="form-label" for="{{ form.phone.id_for_label }}">Telefon
+                        {{ form.phone }}
+                    </label>
+
+                    <label class="form-label" for="{{ form.school.id_for_label }}">Məktəb
+                        {{ form.school }}
+                    </label>
+
+                </div>
+
+                <div class="d-flex flex-column flex-grow-1">
+                    <label class="form-label" for="{{ form.exam.id_for_label }}">İmtahan
+                        {{ form.exam }}
+                    </label>
+
+
+                    <label class="form-label" for="{{ form.exam_type.id_for_label }}">İmtahan növü
+                        {{ form.exam_type }}
+                    </label>
+
+                    <label class="form-label" for="{{ form.precinct.id_for_label }}">Məntəqə
+                        {{ form.precinct }}
+                    </label>
+
+                    <label class="form-label" for="{{ form.floor.id_for_label }}">Mərtəbə
+                        {{ form.floor }}
+                    </label>
+
+                    <label class="form-label" for="{{ form.room.id_for_label }}">Otaq
+                        {{ form.room }}
+                    </label>
+
+                    <div id="seats-container" style="display: none;">
+                        <label>Yer seçin:</label>
+                        <div class="seats-grid">
+                            <!-- Места будут динамически добавлены сюда -->
+                        </div>
+                    </div>
+
+                    <div id="seats-container" style="display: none;">
+                        <label>Yer seçin:</label>
+                        <div class="seats-grid">
+                            <!-- Кнопки мест будут добавлены сюда через JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Скрытое поле для сохранения выбранного места -->
+                    <input type="hidden" id="id_seat" name="seat_number" value="{{ form.seat_number.value|default:'' }}">
+
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+        crossorigin="anonymous"></script>
+
+<script>
+    $(document).ready(function () {
+        let initialExam = $('#examSelect').val();
+        let initialExamType = $('#examTypeSelect').val();
+        let initialPrecinct = $('#precinctSelect').val();
+        let initialFloor = $('#floorSelect').val();
+        let initialRoom = $('#roomSelect').val();
+        let initialSeat = $('#id_seat').val();  // Предыдущее выбранное место
+
+        if (initialExam) {
+            loadExamType(initialExam, initialExamType);
+            loadPrecinct(initialExam, initialPrecinct);
+        }
+
+        if (initialPrecinct) {
+            loadFloor(initialPrecinct, initialFloor);
+        }
+
+        if (initialFloor) {
+            loadRoom(initialFloor, initialRoom);
+        }
+
+        if (initialRoom) {
+            loadSeats(initialRoom, initialSeat);
+        }
+
+        // Загрузка типов экзамена
+        function loadExamType(examId, selectedExamType) {
+            $.ajax({
+                url: '{% url "ticket:load_exam_type" %}',
+                data: {'exam': examId},
+                success: function (data) {
+                    $('#examTypeSelect').empty().show();
+                    $('#examTypeSelect').append('<option value="">Seçin...</option>');
+                    data.forEach(item => {
+                        $('#examTypeSelect').append('<option value="' + item.id + '">' + item.name + '</option>');
+                    });
+                    if (selectedExamType) {
+                        $('#examTypeSelect').val(selectedExamType);
+                    }
+                }
+            });
+        }
+
+        // Загрузка участков
+        function loadPrecinct(examId, selectedPrecinct) {
+            $.ajax({
+                url: '{% url "ticket:load_precinct" %}',
+                data: {'exam': examId},
+                success: function (data) {
+                    $('#precinctSelect').empty().show();
+                    $('#precinctSelect').append('<option value="">Seçin...</option>');
+                    data.forEach(item => {
+                        $('#precinctSelect').append('<option value="' + item.id + '">' + item.name + '</option>');
+                    });
+                    if (selectedPrecinct) {
+                        $('#precinctSelect').val(selectedPrecinct);
+                    }
+                }
+            });
+        }
+
+        // Загрузка этажей
+        function loadFloor(precinctId, selectedFloor) {
+            $.ajax({
+                url: '{% url "ticket:load_floor" %}',
+                data: {'precinct_id': precinctId},
+                success: function (data) {
+                    $('#floorSelect').empty().show();
+                    $('#floorSelect').append('<option value="">Seçin...</option>');
+                    data.forEach(item => {
+                        $('#floorSelect').append('<option value="' + item.id + '">' + item.name + '</option>');
+                    });
+                    if (selectedFloor) {
+                        $('#floorSelect').val(selectedFloor);
+                    }
+                }
+            });
+        }
+
+        // Загрузка комнат
+        function loadRoom(floorId, selectedRoom) {
+            $.ajax({
+                url: '{% url "ticket:load_room" %}',
+                data: {'floor_id': floorId},
+                success: function (data) {
+                    $('#roomSelect').empty().show();
+                    $('#roomSelect').append('<option value="">Seçin...</option>');
+                    data.forEach(item => {
+                        $('#roomSelect').append('<option value="' + item.id + '">' + item.name + '</option>');
+                    });
+                    if (selectedRoom) {
+                        $('#roomSelect').val(selectedRoom);
+                    }
+                }
+            });
+        }
+
+        // Загрузка мест
+        function loadSeats(roomId, selectedSeat) {
+            $.ajax({
+                url: '{% url "ticket:load_seats" %}',
+                data: {'room_id': roomId},
+                success: function (data) {
+                    $('#seats-container').show();
+                    $('.seats-grid').empty();
+
+                    data.forEach(seat => {
+                        let seatButton = $('<button class="btn"></button>')
+                            .addClass('seat-button btn btn-success')
+                            .text(seat.seat_number)
+                            .attr('data-seat-number', seat.seat_number);
+
+                        if (seat.occupied) {
+                            seatButton.addClass('occupied btn-danger').prop('disabled', true);
+                        } else {
+                            seatButton.addClass('available').click(function () {
+                                $('.seat-button.selected').removeClass('selected');
+                                $(this).addClass('selected');
+                                $('#id_seat').val(seat.seat_number);
+                            });
+
+                            if (selectedSeat && seat.seat_number == selectedSeat) {
+                                seatButton.addClass('selected');
+                                $('#id_seat').val(seat.seat_number);
+                            }
+                        }
+
+                        $('.seats-grid').append(seatButton);
+                    });
+                }
+            });
+        }
+
+        $('#examSelect').change(function () {
+            let examId = $(this).val();
+            $('#examTypeSelect').empty().hide();
+            $('#precinctSelect').empty().hide();
+            $('#floorSelect').empty().hide();
+            $('#roomSelect').empty().hide();
+            $('.seats-grid').empty();
+
+            if (examId) {
+                loadExamType(examId);
+                loadPrecinct(examId);
+            }
+        });
+
+        $('#precinctSelect').change(function () {
+            let precinctId = $(this).val();
+            $('#floorSelect').empty().hide();
+            $('#roomSelect').empty().hide();
+            $('.seats-grid').empty();
+
+            if (precinctId) {
+                loadFloor(precinctId);
+            }
+        });
+
+        $('#floorSelect').change(function () {
+            let floorId = $(this).val();
+            $('#roomSelect').empty().hide();
+            $('.seats-grid').empty();
+
+            if (floorId) {
+                loadRoom(floorId);
+            }
+        });
+
+        $('#roomSelect').change(function () {
+            let roomId = $(this).val();
+            $('.seats-grid').empty();
+
+            if (roomId) {
+                loadSeats(roomId);
+            }
+        });
+    });
+
+</script>
+
+<style>
+    #examTypeSelect {
+        display: none;
+    }
+
+    #precinctSelect {
+        display: none;
+    }
+
+    #floorSelect {
+        display: none;
+    }
+
+    #roomSelect {
+        display: none;
+    }
+
+    .seat-button {
+        padding: 10px;
+        margin: 5px;
+    }
+
+    .available {
+        background-color: green;
+        color: white;
+    }
+
+    .occupied {
+        background-color: red;
+        color: white;
+        cursor: not-allowed;
+    }
+
+    .selected {
+        background-color: blue;
+        color: white;
+    }
+
+</style>
+{% endblock %}

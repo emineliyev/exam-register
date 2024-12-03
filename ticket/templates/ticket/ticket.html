@@ -1,0 +1,54 @@
+{% extends 'empty_base.html' %}
+{% load static %}
+{% block title %}
+	Bilet
+{% endblock %}
+{% block content %}
+<div class="row mt-5">
+        <div class="col-12">
+            <h5 class="text-center text-white bg-secondary border rounded-0 pt-2 pb-2">İMTAHANA BURAXILIŞ VƏRƏQİ</h5>
+            <div class="d-flex justify-content-between"><img class="mx-3" src="{% static 'assets/img/logo.png' %}" width="70" height="100" />
+                <div class="border-2 p-2 me-2">
+                    <h4 class="me-5 mt-2">{{ ticket.exam.name }}</h4>
+                    <hr />
+                    <h4 class="text-center me-5 mt-2">{{ ticket.exam_type }}</h4>
+                </div>
+            </div>
+            <hr />
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Şagird məlumatları</th>
+                            <th>İmtahan məlumatları</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Ad: {{ ticket.first_name }}</td>
+                            <td>Məntəqə: {{ ticket.precinct.name }}</td>
+                        </tr>
+                        <tr>
+                            <td>Soyad: {{ ticket.last_name }}</td>
+                            <td>Mətəbə: {{ ticket.floor.name }}</td>
+                        </tr>
+                        <tr>
+                            <td>Sinif: {{ ticket.grader }}</td>
+                            <td>Otaq: {{ ticket.room.name }}</td>
+                        </tr>
+                        <tr>
+                            <td>Məktəb: {{ ticket.school }}</td>
+                            <td>Yer: {{ ticket.seat_number }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">Ünvan: {{ ticket.precinct.address }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-center" colspan="2">İmtahan tarixi: {{ ticket.exam.date|date:'d.m.y' }} - SAAT: {{ ticket.exam.time }}<br /></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

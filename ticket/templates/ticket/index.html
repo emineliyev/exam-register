@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="row mb-3">
+    <div class="col-md-12">
+        <h3>Filter</h3>
+        <form method="get">
+            {% csrf_token %}
+            <label class="form-label me-2">Imtahan
+                {{ filter.form.exam }}
+            </label>
+
+            <label class="form-label me-2">Imtahan növü
+                {{ filter.form.exam_type }}
+            </label>
+
+            <label class="form-label me-2">İş nömrə
+                {{ filter.form.number }}
+            </label>
+            <label class="form-label me-2">Ad
+                {{ filter.form.first_name }}
+            </label>
+            <label class="form-label me-2">Soyad
+                {{ filter.form.last_name }}
+            </label>
+
+            <label class="form-label me-2">Sinif
+                {{ filter.form.grader }}
+            </label>
+
+
+            <button class="btn btn-sm btn-outline-secondary mb-1" type="submit"><i class="fas fa-filter"></i></button>
+            <a href="{% url 'ticket:index' %}" class="btn btn-sm btn-outline-secondary mb-1" type="submit"><i class="fas fa-redo-alt"></i></a>
+        </form>
+    </div>
+</div>
+<hr>
+<div class="row">
+    <div class="col">
+        <a href="{% url 'ticket:add-ticket' %}" class="btn btn-outline-success btn-sm mb-2">
+            Yeni bilet <i class="fas fa-user-plus"></i>
+        </a>
+    </div>
+    <div class="col-md-12">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>İş nömrə</th>
+                    <th>Ad</th>
+                    <th>Soyad</th>
+                    <th>Sinif</th>
+                    <th>İmtahan növü</th>
+                    <th class="text-center">Əməliyyatlar</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for ticket in tickets %}
+                <tr>
+                    <td>{{ ticket.number }}</td>
+                    <td>{{ ticket.first_name }}</td>
+                    <td>{{ ticket.last_name }}</td>
+                    <td>{{ ticket.grader }}</td>
+                    <td>{{ ticket.exam_type }}</td>
+                    <td class="text-center">
+                        <a href="{% url 'ticket:ticket' ticket.id %}" target="_blank"
+                           class="btn btn-outline-success btn-sm me-2" type="button">
+                            <i class="fas fa-print" data-bs-toggle="tooltip" data-bss-tooltip="" title="Çap et"></i>
+                        </a>
+                        <a href="{% url 'ticket:update' ticket.id %}" class="btn btn-outline-primary btn-sm me-2"
+                           data-bs-toggle="tooltip" data-bss-tooltip="" type="button" title="Redakte et">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'ticket:delete_ticket' ticket.id %}" class="btn btn-outline-danger btn-sm me-2"
+                           data-bs-toggle="tooltip" data-bss-tooltip="" type="button" title="Sil">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
