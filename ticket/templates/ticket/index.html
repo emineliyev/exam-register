@@ -37,31 +37,36 @@
 <hr>
 <div class="row">
     <div class="col">
-        <a href="{% url 'ticket:add-ticket' %}" class="btn btn-outline-success btn-sm mb-2">
+        <a href="{% url 'ticket:add_ticket' %}" class="btn btn-outline-success btn-sm mb-2">
             Yeni bilet <i class="fas fa-user-plus"></i>
         </a>
     </div>
     <div class="col-md-12">
         <div class="table-responsive">
-            <table class="table">
+            <p>Şagird sayı: {{ ticket_counter }}</p>
+            <table class="table table-hover text-center">
                 <thead>
                 <tr>
+                    <th>#</th>
                     <th>İş nömrə</th>
                     <th>Ad</th>
                     <th>Soyad</th>
                     <th>Sinif</th>
                     <th>İmtahan növü</th>
+                    <th>Qeydiyyat tarixi</th>
                     <th class="text-center">Əməliyyatlar</th>
                 </tr>
                 </thead>
                 <tbody>
                 {% for ticket in tickets %}
                 <tr>
+                    <td>{{ forloop.counter }}</td>
                     <td>{{ ticket.number }}</td>
                     <td>{{ ticket.first_name }}</td>
                     <td>{{ ticket.last_name }}</td>
                     <td>{{ ticket.grader }}</td>
                     <td>{{ ticket.exam_type }}</td>
+                    <td>{{ ticket.created_at|date:'d.m.Y' }}</td>
                     <td class="text-center">
                         <a href="{% url 'ticket:ticket' ticket.id %}" target="_blank"
                            class="btn btn-outline-success btn-sm me-2" type="button">
@@ -71,8 +76,11 @@
                            data-bs-toggle="tooltip" data-bss-tooltip="" type="button" title="Redakte et">
                             <i class="fas fa-edit"></i>
                         </a>
-                        <a href="{% url 'ticket:delete_ticket' ticket.id %}" class="btn btn-outline-danger btn-sm me-2"
-                           data-bs-toggle="tooltip" data-bss-tooltip="" type="button" title="Sil">
+                        <a href="{% url 'ticket:delete_ticket' ticket.id %}"
+                           class="btn btn-outline-danger btn-sm me-2 delete-ticket"
+                           data-id="{{ ticket.id }}"
+                           data-url="{% url 'ticket:delete_ticket' ticket.id %}"
+                           title="Sil">
                             <i class="fas fa-trash"></i>
                         </a>
                     </td>
@@ -83,4 +91,8 @@
         </div>
     </div>
 </div>
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'assets/js/main.js' %}"></script>
+
 {% endblock %}

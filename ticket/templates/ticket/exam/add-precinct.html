@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+	Yeni bilet
+{% endblock %}
+{% block content %}
+<div class="row">
+<h3 class="text-center">Yeni məntəqə</h3>
+    <hr>
+    <nav style="--bs-breadcrumb-divider: '';" aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'ticket:precinct_list' %}">Məntəqələr</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Yeni məntəqə</li>
+      </ol>
+    </nav>
+    <div class="col-md-12">
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex justify-content-between">
+                <div class="d-flex flex-column flex-grow-1 me-2">
+                    <label class="form-label" for="{{ form.name.id_for_label }}">Məntəqə adı
+                        {{ form.name }}
+                    </label>
+
+                    <label class="form-label" for="{{ form.address.id_for_label }}">Ünvan
+                        {{ form.address }}
+                    </label>
+
+                    <label class="form-label" for="{{ form.exam.id_for_label }}">İmtahan seçin
+                        {{ form.exam }}
+                    </label>
+                    <div>
+                    <button class="btn btn-success">Əlavə et</button>
+                        </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+        crossorigin="anonymous"></script>
+{% endblock %}

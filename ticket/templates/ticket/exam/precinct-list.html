@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+	Məntəqə
+{% endblock %}
+{% block content %}
+<div class="row">
+<h3 class="text-center">Məntəqələr cədvəli</h3>
+    <hr>
+    <div class="col">
+        <a href="{% url 'ticket:precinct_create' %}" class="btn btn-outline-success btn-sm mb-2">
+            Yeni məntəqə <i class="fas fa-user-plus"></i>
+        </a>
+    </div>
+    <div class="col-md-12">
+        <div class="table-responsive">
+            <p>Məntəqə sayı: {{ ticket_counter }}</p>
+            <table class="table table-hover text-center">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Ad</th>
+                    <th>Ünvan</th>
+                    <th>İmtahan</th>
+                    <th>Mərtəbə</th>
+                    <th class="text-center">Əməliyyatlar</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for precinct in precincts %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ precinct.name }}</td>
+                    <td>{{ precinct.address }}</td>
+                    <td>{{ precinct.exam }}</td>
+                    <td>
+                        <a href="{% url 'ticket:floor_list' precinct.id %}">
+                            Mərtəbələr ({{ precinct.floor_count  }})
+                        </a>
+                    </td>
+
+                    <td class="text-center">
+                        <a href="" target="_blank"
+                           class="btn btn-outline-success btn-sm me-2" type="button">
+                            <i class="fas fa-print" data-bs-toggle="tooltip" data-bss-tooltip="" title="Çap et"></i>
+                        </a>
+                        <a href="" class="btn btn-outline-primary btn-sm me-2"
+                           data-bs-toggle="tooltip" data-bss-tooltip="" type="button" title="Redakte et">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'ticket:delete_precinct' precinct.id %}"
+                           class="btn btn-outline-danger btn-sm me-2 delete-ticket"
+                           data-id="{{ precinct.id }}"
+                           data-url="{% url 'ticket:delete_precinct' precinct.id %}"
+                           title="Sil">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

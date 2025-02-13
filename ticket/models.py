@@ -1,4 +1,6 @@
 import random
+
+from django.contrib.auth.models import User
 from django.db import models, IntegrityError
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -16,6 +18,7 @@ class Grader(models.Model):
 
 
 class Exam(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="User", related_name='exam')
     name = models.CharField(max_length=100, verbose_name="Ad")
     date = models.DateField(verbose_name="Tarix")
     time = models.TimeField(verbose_name="Saat")
@@ -45,6 +48,7 @@ class ExamType(models.Model):
 
 
 class Precinct(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="User", related_name="precincts")
     name = models.CharField(max_length=100, verbose_name="Ad")
     address = models.CharField(max_length=100, verbose_name="Ünvan")
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, verbose_name="İmtahan")
@@ -58,6 +62,7 @@ class Precinct(models.Model):
 
 
 class Floor(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="User", related_name="floor")
     name = models.CharField(max_length=100, verbose_name="Mərtəbə adı")
     precinct = models.ForeignKey(Precinct, on_delete=models.CASCADE, verbose_name="Məntəqə")
 
@@ -101,6 +106,7 @@ class Seat(models.Model):
 
 
 class Ticket(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Sahib", related_name="tickets")
     number = models.IntegerField(default=0, blank=True, null=True, verbose_name='İş nömrə')
     first_name = models.CharField(max_length=100, verbose_name="Ad")
     last_name = models.CharField(max_length=100, verbose_name="Soyad")
@@ -114,25 +120,24 @@ class Ticket(models.Model):
     floor = models.ForeignKey(Floor, on_delete=models.CASCADE, verbose_name='Mərtəbə')
     room = models.ForeignKey(Room, on_delete=models.CASCADE, verbose_name="Otaq")
     seat_number = models.IntegerField(null=True, blank=True, verbose_name="Yer nömrəsi")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Qeydiyyat tarixi')
 
     def save(self, *args, **kwargs):
         if not self.seat_number:
             raise ValueError("Seat must be selected")
 
-        # Генерация уникального номера
         if not self.number:
-            while True:
+            for _ in range(10):  # Даем 10 попыток
                 self.number = random.randint(200000, 9999999)
-                try:
-                    super().save(*args, **kwargs)
+                if not Ticket.objects.filter(number=self.number).exists():
                     break
-                except IntegrityError:
-                    continue
+            else:
+                raise ValueError("Не удалось сгенерировать уникальный номер билета")
 
         if self.room.available_seats > 0:
             self.room.available_seats -= 1
             self.room.save()
-            super().save(*args)
+            super().save(*args, **kwargs)
         else:
             raise ValueError("Room is empty")
 
@@ -142,6 +147,7 @@ class Ticket(models.Model):
     class Meta:
         verbose_name = 'Bilet'
         verbose_name_plural = 'Biletlər'
+        ordering = ['-created_at']
 
 
 @receiver(post_save, sender=Room)

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="row">
+    <div class="col">
+        <a href="{% url 'ticket:precinct_create' %}" class="btn btn-outline-success btn-sm mb-2">
+            Yeni məntəqə <i class="fas fa-user-plus"></i>
+        </a>
+    </div>
+    <div class="col-md-12">
+        <div class="table-responsive">
+            <p>Məntəqə sayı: {{ ticket_counter }}</p>
+            <table class="table table-hover text-center">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Mərtəbə</th>
+                    <th>Otaqlar</th>
+                    <th class="text-center">Əməliyyatlar</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for floor in floors %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ floor.name }}</td>
+                    <td>{{ floor.name }}</td>
+                    <td class="text-center">
+                        <a href="" target="_blank"
+                           class="btn btn-outline-success btn-sm me-2" type="button">
+                            <i class="fas fa-print" data-bs-toggle="tooltip" data-bss-tooltip="" title="Çap et"></i>
+                        </a>
+                        <a href="" class="btn btn-outline-primary btn-sm me-2"
+                           data-bs-toggle="tooltip" data-bss-tooltip="" type="button" title="Redakte et">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href=""
+                           class="btn btn-outline-danger btn-sm me-2 delete-ticket"
+                           data-id="{{ ticket.id }}"
+                           data-url=""
+                           title="Sil">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{% endblock %}

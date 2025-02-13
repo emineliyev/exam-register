@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+	Yeni imtahan
+{% endblock %}
+{% block content %}
+<div class="row">
+<h3>Yeni Imtahan</h3>
+    <hr>
+    <div class="col-md-12">
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex justify-content-between">
+                <div class="d-flex flex-column flex-grow-1 me-2">
+
+                    <label class="form-label" for="{{ form.name.id_for_label }}">Imtahan adı
+                        {{ form.name }}
+                    </label>
+
+                    <label class="form-label" for="{{ form.date.id_for_label }}">Tarix
+                        {{ form.date }}
+                    </label>
+
+                    <label class="form-label" for="{{ form.time.id_for_label }}">Vaxt
+                        {{ form.time }}
+                    </label>
+                    <label class="form-label" for="{{ form.status.id_for_label }}">Status
+                        {{ form.status }}
+                    </label>
+                    <button class="btn btn-success">Əlavə et</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4="
+        crossorigin="anonymous"></script>
+{% endblock %}

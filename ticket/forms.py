@@ -1,6 +1,5 @@
 from django import forms
-
-from ticket.models import Ticket
+from .models import Ticket, Precinct, Exam, Room, Floor, Grader, ExamType
 
 
 class CreateTicketForm(forms.ModelForm):
@@ -9,18 +8,8 @@ class CreateTicketForm(forms.ModelForm):
     class Meta:
         model = Ticket
         fields = [
-            'first_name',
-            'last_name',
-            'grader',
-            'gender',
-            'school',
-            'phone',
-            'exam',
-            'exam_type',
-            'precinct',
-            'floor',
-            'room',
-            'seat_number',
+            'first_name', 'last_name', 'grader', 'gender', 'school',
+            'phone', 'exam', 'exam_type', 'precinct', 'floor', 'room', 'seat_number'
         ]
         widgets = {
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
@@ -35,3 +24,83 @@ class CreateTicketForm(forms.ModelForm):
             'floor': forms.Select(attrs={'class': 'form-control', 'id': 'floorSelect'}),
             'room': forms.Select(attrs={'class': 'form-control', 'id': 'roomSelect'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)  # Извлекаем пользователя и удаляем его из kwargs
+        super().__init__(*args, **kwargs)
+
+        if user:
+            # Фильтруем только экзамены, созданные текущим пользователем
+            self.fields['exam'].queryset = Exam.objects.filter(user=user)
+
+            # Если экзамен уже выбран, фильтруем связанные объекты
+            if 'exam' in self.data:
+                try:
+                    exam_id = int(self.data.get('exam'))
+                    self.fields['precinct'].queryset = Precinct.objects.filter(exam_id=exam_id)
+                    self.fields['room'].queryset = Room.objects.filter(exam_id=exam_id)
+                    self.fields['floor'].queryset = Floor.objects.filter(exam_id=exam_id)
+                    self.fields['exam_type'].queryset = ExamType.objects.filter(exam_id=exam_id)
+                except (ValueError, TypeError):
+                    pass  # Если данные некорректные, оставляем пустые списки
+            else:
+                # Если экзамен не выбран, делаем поля пустыми
+                self.fields['precinct'].queryset = Precinct.objects.none()
+                self.fields['room'].queryset = Room.objects.none()
+                self.fields['floor'].queryset = Floor.objects.none()
+                self.fields['exam_type'].queryset = ExamType.objects.none()
+
+
+class CreateExamForm(forms.ModelForm):
+    class Meta:
+        model = Exam
+        fields = [
+            'name',
+            'date',
+            'time',
+            'status',
+        ]
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'time': forms.TextInput(attrs={'class': 'form-control', 'type': 'time'}),
+
+        }
+
+
+class CreatePrecinctForm(forms.ModelForm):
+    class Meta:
+        model = Precinct
+        fields = ['name', 'address', 'exam']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'address': forms.TextInput(attrs={'class': 'form-control'}),
+            'exam': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)  # Извлекаем пользователя и удаляем из kwargs
+        super().__init__(*args, **kwargs)
+
+        if user:
+            # Фильтруем экзамены, чтобы пользователь видел только свои
+            self.fields['exam'].queryset = Exam.objects.filter(user=user)
+
+
+class FloorCreateForm(forms.ModelForm):
+    class Meta:
+        model = Floor
+        fields = [
+            'name',
+            'precinct'
+        ]
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'precinct': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields['precinct'].queryset = Precinct.objects.filter(user=user)

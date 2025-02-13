@@ -22,8 +22,11 @@
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item"><a class="nav-link active" href="{% url 'ticket:index' %}">Qeydiyyat</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'ticket:report' %}">Hesabat</a></li>
-                </ul><button class="btn btn-primary me-2" type="button">Giriş</button>
-                </ul><button class="btn btn-danger" type="button">Çıxış</button>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'ticket:exam_list' %}">Imtahanlar</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'ticket:precinct_list' %}">Məntəqələr</a>
+                    </li>
+                </ul>
+                </ul><a href="{% url 'account:logout' %}" class="btn btn-danger" type="button">Çıxış</a>
             </div>
         </div>
     </nav>
