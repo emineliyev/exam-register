@@ -1,15 +1,13 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}
-    Məntəqə
+    Otaqlar
 {% endblock %}
 {% block content %}
     <div class="row">
-        <h3 class="text-center text-secondary">Məntəqələr cədvəli</h3>
-        <hr>
         <div class="col">
-            <a href="{% url 'ticket:precinct_create' %}" class="btn btn-outline-success btn-sm mb-2">
-                Yeni məntəqə <i class="fas fa-user-plus"></i>
+            <a href="{% url 'ticket:add_room' %}" class="btn btn-outline-success btn-sm mb-2">
+                Yeni otaq <i class="fas fa-user-plus"></i>
             </a>
         </div>
         <div class="col-md-12">
@@ -20,34 +18,36 @@
                     <tr>
                         <th>#</th>
                         <th>Ad</th>
-                        <th>Ünvan</th>
-                        <th>İmtahan</th>
+                        <th>Yer sayı</th>
+                        <th>Böş yer sayı</th>
+                        <th>İmtahan növü</th>
                         <th>Mərtəbə</th>
                         <th class="text-center">Əməliyyatlar</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {% for precinct in precincts %}
+                    {% for room in rooms %}
                         <tr>
                             <td>{{ forloop.counter }}</td>
-                            <td>{{ precinct.name }}</td>
-                            <td>{{ precinct.address }}</td>
-                            <td>{{ precinct.exam }}</td>
-                            <td>
-                                <a href="{% url 'ticket:floor_list' precinct.id %}">
-                                    Mərtəbələr ({{ precinct.floor_count }})
-                                </a>
-                            </td>
-
+                            <td>{{ room.name }}</td>
+                            <td>{{ room.capacity }}</td>
+                            <td>{{ room.available_seats }}</td>
+                            <td>{{ room.exam_type }}</td>
+                            <td>{{ room.floor }}</td>
                             <td class="text-center">
-                                <a href="{% url 'ticket:edit_precinct' precinct.id %}" class="btn btn-outline-primary btn-sm me-2"
+                                <a href="" target="_blank"
+                                   class="btn btn-outline-success btn-sm me-2" type="button">
+                                    <i class="fas fa-print" data-bs-toggle="tooltip" data-bss-tooltip=""
+                                       title="Çap et"></i>
+                                </a>
+                                <a href="" class="btn btn-outline-primary btn-sm me-2"
                                    data-bs-toggle="tooltip" data-bss-tooltip="" type="button" title="Redakte et">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <a href="{% url 'ticket:delete_precinct' precinct.id %}"
+                                <a href=""
                                    class="btn btn-outline-danger btn-sm me-2 delete-ticket"
-                                   data-id="{{ precinct.id }}"
-                                   data-url="{% url 'ticket:delete_precinct' precinct.id %}"
+                                   data-id=""
+                                   data-url=""
                                    title="Sil">
                                     <i class="fas fa-trash"></i>
                                 </a>

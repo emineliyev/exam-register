@@ -1,5 +1,7 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Count
 from django.http import JsonResponse, request, HttpResponse
 from django.shortcuts import render, get_object_or_404
@@ -7,7 +9,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView
 import openpyxl
 from ticket.filters import TicketFilter
-from ticket.forms import CreateTicketForm, CreatePrecinctForm, CreateExamForm, FloorCreateForm
+from ticket.forms import CreateTicketForm, CreatePrecinctForm, CreateExamForm, FloorCreateForm, RoomCreateForm
 from ticket.models import Ticket, Floor, Room, ExamType, Precinct, Exam
 import logging
 
@@ -252,6 +254,28 @@ class ExamCreateView(LoginRequiredMixin, CreateView):
         return context
 
 
+class ExamUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = Exam
+    form_class = CreateExamForm  # ✅ Используем нашу форму
+    template_name = 'ticket/exam/edit-exam.html'
+    success_url = reverse_lazy('ticket:exam_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return context
+
+
+@login_required
+def delete_exam(request, exam_id):
+    if request.method == 'POST':
+        exam = Exam.objects.get(id=exam_id)
+
+        exam.delete()
+        return JsonResponse({"message": "Uğurla silindi"}, status=200)
+
+    return JsonResponse({"error": "Yanlış sorğu metodu"}, status=400)
+
+
 # PRECINCT
 class PrecinctListView(LoginRequiredMixin, ListView):
     model = Precinct
@@ -289,9 +313,21 @@ class CreatePrecinctView(LoginRequiredMixin, CreateView):
         return context
 
 
+class PrecinctUpdateView(UpdateView):
+    model = Precinct
+    form_class = CreatePrecinctForm
+    template_name = 'ticket/exam/edit-precinct.html'
+    success_url = reverse_lazy('ticket:precinct_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        return context
+
+
+@login_required
 def delete_precinct(request, precinct_id):
     if request.method == 'POST':
-        precinct = Precinct.objects.get(pk=precinct_id)
+        precinct = Precinct.objects.get(id=precinct_id)
 
         precinct.delete()
         return JsonResponse({"message": "Uğurla silindi"}, status=200)
@@ -300,8 +336,6 @@ def delete_precinct(request, precinct_id):
 
 
 # FLOOR
-
-
 class FloorListView(ListView):
     model = Floor
     template_name = 'ticket/exam/floor-list.html'  # Шаблон для отображения этажей
@@ -323,6 +357,58 @@ class FloorCreateView(LoginRequiredMixin, CreateView):
     model = Floor
     form_class = FloorCreateForm
     template_name = 'ticket/exam/add-floor.html'
+    success_url = reverse_lazy('ticket:precinct_list')
+
+    def get_form_kwargs(self):
+        """Передаем текущего пользователя в форму"""
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user  # Передаем user
+        return kwargs
+
+    def form_valid(self, form):
+        """Привязываем Precinct к пользователю"""
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        return context
+
+
+@login_required
+def delete_floor(request, floor_id):
+    if request.method == 'POST':
+        floor = Floor.objects.get(id=floor_id)
+
+        floor.delete()
+        return JsonResponse({"message": "Uğurla silindi"}, status=200)
+
+    return JsonResponse({"error": "Yanlış sorğu metodu"}, status=400)
+
+
+# ROOM
+class RoomListView(ListView):
+    model = Room
+    template_name = 'ticket/exam/room-list.html'  # Шаблон для списка комнат
+    context_object_name = 'rooms'
+
+    def get_queryset(self):
+        """Фильтруем комнаты по `floor_id`"""
+        floor_id = self.kwargs.get('floor_id')
+        return Room.objects.filter(floor_id=floor_id)
+
+    def get_context_data(self, **kwargs):
+        """Добавляем `Floor` в контекст для отображения информации"""
+        context = super().get_context_data(**kwargs)
+        context['floor'] = get_object_or_404(Floor, id=self.kwargs.get('floor_id'))
+        return context
+
+
+class RoomCreateView(CreateView):
+    model = Room
+    form_class = RoomCreateForm
+    template_name = 'ticket/exam/add-room.html'
+    success_url = 'ticket/exam/room-list.html'
 
     def get_form_kwargs(self):
         """Передаем текущего пользователя в форму"""

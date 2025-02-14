@@ -1,16 +1,16 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}
-	Yeni məntəqə
+	Məntəqə redakte
 {% endblock %}
 {% block content %}
 <div class="row">
-<h3 class="text-center text-secondary">Yeni məntəqə</h3>
+<h3 class="text-center text-secondary">Məntəqə redakte</h3>
     <hr>
     <nav style="--bs-breadcrumb-divider: '';" aria-label="breadcrumb">
       <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="{% url 'ticket:precinct_list' %}">Məntəqələr</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Yeni məntəqə</li>
+        <li class="breadcrumb-item active" aria-current="page">Məntəqə redakte</li>
       </ol>
     </nav>
     <div class="col-md-12">
@@ -30,7 +30,7 @@
                         {{ form.exam }}
                     </label>
                     <div>
-                    <button class="btn btn-success">Əlavə et</button>
+                    <button class="btn btn-success">Yadda saxla</button>
                         </div>
                 </div>
             </div>

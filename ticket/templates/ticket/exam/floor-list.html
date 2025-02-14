@@ -1,10 +1,15 @@
 {% extends 'base.html' %}
 {% load static %}
+{% block title %}
+	Mərtəbələr
+{% endblock %}
 {% block content %}
 <div class="row">
+<h3 class="text-center text-secondary">Mərtəbələr cədvəli</h3>
+    <hr>
     <div class="col">
-        <a href="{% url 'ticket:precinct_create' %}" class="btn btn-outline-success btn-sm mb-2">
-            Yeni məntəqə <i class="fas fa-user-plus"></i>
+        <a href="{% url 'ticket:floor_create' %}" class="btn btn-outline-success btn-sm mb-2">
+            Yeni mərtəbə <i class="fas fa-user-plus"></i>
         </a>
     </div>
     <div class="col-md-12">
@@ -24,7 +29,10 @@
                 <tr>
                     <td>{{ forloop.counter }}</td>
                     <td>{{ floor.name }}</td>
-                    <td>{{ floor.name }}</td>
+                    <td>
+                        <a href="{% url 'ticket:room_list' floor.id %}">Otaqlar
+                        </a>
+                    </td>
                     <td class="text-center">
                         <a href="" target="_blank"
                            class="btn btn-outline-success btn-sm me-2" type="button">
@@ -34,10 +42,10 @@
                            data-bs-toggle="tooltip" data-bss-tooltip="" type="button" title="Redakte et">
                             <i class="fas fa-edit"></i>
                         </a>
-                        <a href=""
+                        <a href="{% url 'ticket:delete_floor' floor.id %}"
                            class="btn btn-outline-danger btn-sm me-2 delete-ticket"
-                           data-id="{{ ticket.id }}"
-                           data-url=""
+                           data-id="{{ floor.id }}"
+                           data-url="{% url 'ticket:delete_floor' floor.id %}"
                            title="Sil">
                             <i class="fas fa-trash"></i>
                         </a>

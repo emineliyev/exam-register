@@ -54,18 +54,18 @@ class CreateTicketForm(forms.ModelForm):
 class CreateExamForm(forms.ModelForm):
     class Meta:
         model = Exam
-        fields = [
-            'name',
-            'date',
-            'time',
-            'status',
-        ]
+        fields = ['name', 'date', 'time', 'status']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'time': forms.TextInput(attrs={'class': 'form-control', 'type': 'time'}),
-
+            'date': forms.DateInput(format='%Y-%m-%d',attrs={'class': 'form-control', 'type': 'date'}),
+            'time': forms.TimeInput(format='%H:%M', attrs={'class': 'form-control', 'type': 'time'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields['date'].initial = self.instance.date.strftime('%Y-%m-%d')
+            self.fields['time'].initial = self.instance.time.strftime('%H:%M')
 
 
 class CreatePrecinctForm(forms.ModelForm):
@@ -104,3 +104,28 @@ class FloorCreateForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if user:
             self.fields['precinct'].queryset = Precinct.objects.filter(user=user)
+
+
+class RoomCreateForm(forms.ModelForm):
+    class Meta:
+        model = Room
+        fields = [
+            'name',
+            'capacity',
+            'available_seats',
+            'exam_type',
+            'floor',
+        ]
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'capacity': forms.NumberInput(attrs={'class': 'form-control'}),
+            'available_seats': forms.NumberInput(attrs={'class': 'form-control'}),
+            'exam_type': forms.Select(attrs={'class': 'form-control'}),
+            'floor': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields['floor'].queryset = Floor.objects.filter(user=user)

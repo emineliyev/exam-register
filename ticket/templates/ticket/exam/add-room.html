@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+    Yeni otaq
+{% endblock %}
+{% block content %}
+
+    <div class="row">
+        <h3 class="text-center text-secondary">Yeni otaq</h3>
+        <hr>
+        <nav style="--bs-breadcrumb-divider: '';" aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'ticket:precinct_list' %}">Otaqlar</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Yeni otaq</li>
+            </ol>
+        </nav>
+        <div class="col-md-12">
+            <form method="post">
+                {% csrf_token %}
+                <div class="d-flex justify-content-between">
+                    <div class="d-flex flex-column flex-grow-1 me-2">
+                        <label class="form-label" for="{{ form.name.id_for_label }}">Otaq adı
+                            {{ form.name }}
+                        </label>
+
+                        <label class="form-label" for="{{ form.capacity.id_for_label }}">Yer sayı
+                            {{ form.capacity }}
+                        </label>
+
+                        <label class="form-label" for="{{ form.available_seats.id_for_label }}">Boş yer sayı
+                            {{ form.available_seats }}
+                        </label>
+
+                        <label class="form-label" for="{{ form.exam_type.id_for_label }}">İmtahan növü
+                            {{ form.exam_type }}
+                        </label>
+
+                        <label class="form-label" for="{{ form.floor.id_for_label }}">Mərtəbə
+                            {{ form.floor }}
+                        </label>
+                        <div>
+                            <button class="btn btn-success">Əlavə et</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
+
+{% endblock %}

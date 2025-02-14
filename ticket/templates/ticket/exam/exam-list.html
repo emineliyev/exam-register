@@ -5,6 +5,8 @@
 {% endblock %}
 {% block content %}
     <div class="row">
+    <h3 class="text-center text-secondary">İmtahanlar cədvəli</h3>
+        <hr>
         <div class="col">
             <a href="{% url 'ticket:exam_create' %}" class="btn btn-outline-success btn-sm mb-2">
                 Yeni imtahan <i class="fas fa-user-plus"></i>
@@ -12,14 +14,11 @@
         </div>
         <div class="col-md-12">
             <div class="table-responsive">
-                <p>Məntəqə sayı: {{ ticket_counter }}</p>
+                <p>İmtahan sayı: {{ ticket_counter }}</p>
                 <table class="table table-hover text-center">
                     <thead>
                     <tr>
-
-
                         <th>#</th>
-                        <th>Sıra</th>
                         <th>İmtahan</th>
                         <th>Tarix</th>
                         <th>Status</th>
@@ -30,24 +29,22 @@
                     {% for exam in exams %}
                         <tr>
                             <td>{{ forloop.counter }}</td>
-                            <td>{{ exam.order }}</td>
                             <td>{{ exam.name }}</td>
                             <td>{{ exam.date|date:"d.m.Y" }} - {{ exam.time }}</td>
-                            <td>{{ exam.status }}</td>
+                            {% if exam.status %}
+                            <td class="text-success"><strong>Aktiv</strong></td>
+                            {% else %}
+                            <td class="text-danger"><strong>Passiv</strong></td>
+                            {% endif %}
                             <td class="text-center">
-                                <a href="" target="_blank"
-                                   class="btn btn-outline-success btn-sm me-2" type="button">
-                                    <i class="fas fa-print" data-bs-toggle="tooltip" data-bss-tooltip=""
-                                       title="Çap et"></i>
-                                </a>
-                                <a href="" class="btn btn-outline-primary btn-sm me-2"
+                                <a href="{% url 'ticket:edit_exam' exam.id %}" class="btn btn-outline-primary btn-sm me-2"
                                    data-bs-toggle="tooltip" data-bss-tooltip="" type="button" title="Redakte et">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <a href=""
+                                <a href="{% url 'ticket:delete_exam' exam.id %}"
                                    class="btn btn-outline-danger btn-sm me-2 delete-ticket"
-                                   data-id="{{ ticket.id }}"
-                                   data-url=""
+                                   data-id="{{ exam.id }}"
+                                   data-url="{% url 'ticket:delete_exam' exam.id %}"
                                    title="Sil">
                                     <i class="fas fa-trash"></i>
                                 </a>
