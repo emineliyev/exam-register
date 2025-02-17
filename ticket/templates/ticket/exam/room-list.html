@@ -17,7 +17,7 @@
                     <thead>
                     <tr>
                         <th>#</th>
-                        <th>Ad</th>
+                        <th>Otaq</th>
                         <th>Yer sayı</th>
                         <th>Böş yer sayı</th>
                         <th>İmtahan növü</th>
@@ -35,19 +35,14 @@
                             <td>{{ room.exam_type }}</td>
                             <td>{{ room.floor }}</td>
                             <td class="text-center">
-                                <a href="" target="_blank"
-                                   class="btn btn-outline-success btn-sm me-2" type="button">
-                                    <i class="fas fa-print" data-bs-toggle="tooltip" data-bss-tooltip=""
-                                       title="Çap et"></i>
-                                </a>
-                                <a href="" class="btn btn-outline-primary btn-sm me-2"
+                                <a href="{% url 'ticket:edit_room' room.id %}" class="btn btn-outline-primary btn-sm me-2"
                                    data-bs-toggle="tooltip" data-bss-tooltip="" type="button" title="Redakte et">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <a href=""
+                                <a href="{% url 'ticket:delete_room' room.id %}"
                                    class="btn btn-outline-danger btn-sm me-2 delete-ticket"
-                                   data-id=""
-                                   data-url=""
+                                   data-id="{{ room.id }}"
+                                   data-url="{% url 'ticket:delete_room' room.id %}"
                                    title="Sil">
                                     <i class="fas fa-trash"></i>
                                 </a>

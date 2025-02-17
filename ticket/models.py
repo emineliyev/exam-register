@@ -35,6 +35,7 @@ class Exam(models.Model):
 
 
 class ExamType(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="User", related_name='exam_type')
     name = models.CharField(max_length=100, verbose_name="Ad")
     grades = models.ManyToManyField(Grader, verbose_name="Siniflər")
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, verbose_name="İmtahan")
@@ -82,7 +83,7 @@ class Room(models.Model):
     floor = models.ForeignKey(Floor, on_delete=models.CASCADE, verbose_name="Mərtəbə")
 
     def save(self, *args, **kwargs):
-        if not self.available_seats:
+        if self.pk is None:  # Только при создании комнаты
             self.available_seats = self.capacity
         super().save(*args, **kwargs)
 

@@ -4,26 +4,28 @@
 Hesabat
 {% endblock %}
 {% block content %}
+
+    <div class="mb-3">
 <select class="form-select mb-2" id="examSelect" aria-label="İmtahan seçin">
     <option selected>İmtahan seçin</option>
     {% for exam in exams %}
     <option value="{{ exam.id }}">{{ exam.name }}</option>
     {% endfor %}
 </select>
+    </div>
 
-
-
+    <div class="mb-3">
 <select class="form-select mb-2" id="examTypeSelect" aria-label="Тип экзамена">
     <option selected>İmtahan növü</option>
 </select>
-
+</div>
 <form method="get" action="{% url 'ticket:export_to_excel' %}">
     <input type="hidden" name="exam" id="selectedExam">
     <input type="hidden" name="exam_type" id="selectedExamType">
     <button type="submit" class="btn btn-primary">Export</button>
 </form>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
 <script type="text/javascript">
     $(document).ready(function () {
         $('#examSelect').change(function () {

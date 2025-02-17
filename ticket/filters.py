@@ -1,7 +1,6 @@
 import django_filters
 from django import forms
-
-from ticket.models import Ticket, Grader, Exam, ExamType
+from .models import Ticket, Grader, Exam, ExamType
 
 
 class TicketFilter(django_filters.FilterSet):
@@ -12,21 +11,18 @@ class TicketFilter(django_filters.FilterSet):
     number = django_filters.NumberFilter(lookup_expr='icontains', label="İş nömrə", widget=forms.NumberInput(
         attrs={'class': 'form-control', }))
 
-    # Поле с выпадающим списком для выбора "Grader"
     grader = django_filters.ModelChoiceFilter(
         queryset=Grader.objects.all(),
         label="Sinif",
         widget=forms.Select(attrs={'class': 'form-control', 'placeholder': 'First Name'})
     )
 
-    # Поле с выпадающим списком для выбора "Exam"
     exam = django_filters.ModelChoiceFilter(
-        queryset=Exam.objects.all(),
+        queryset=Exam.objects.none(),  # ❌ Начинаем с пустого списка
         label="İmtahan",
         widget=forms.Select(attrs={'class': 'form-control', 'placeholder': 'First Name'})
     )
 
-    # Поле с выпадающим списком для выбора "Exam Type"
     exam_type = django_filters.ModelChoiceFilter(
         queryset=ExamType.objects.all(),
         label="İmtahan növü",
@@ -36,3 +32,11 @@ class TicketFilter(django_filters.FilterSet):
     class Meta:
         model = Ticket
         fields = ['number', 'first_name', 'last_name', 'grader', 'exam', 'exam_type']
+
+    def __init__(self, *args, **kwargs):
+        """Фильтруем экзамены по текущему пользователю"""
+        user = kwargs.pop('user', None)  # Извлекаем `user` из `kwargs`
+        super().__init__(*args, **kwargs)
+
+        if user:
+            self.filters['exam'].queryset = Exam.objects.filter(user=user)  # ✅ Фильтруем `Exam`

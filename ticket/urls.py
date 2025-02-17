@@ -2,7 +2,8 @@ from django.urls import path
 from .views import TicketListView, CreateTicketView, get_ticket, load_exam_type, load_precinct, load_floor, load_room, \
     load_seats, delete_ticket, TicketUpdate, get_report, load_exam_type_report, export_to_excel, PrecinctListView, \
     CreatePrecinctView, ExamListView, ExamCreateView, FloorCreateView, FloorListView, delete_precinct, RoomListView, \
-    delete_floor, RoomCreateView, ExamUpdateView, delete_exam, PrecinctUpdateView
+    delete_floor, RoomCreateView, ExamUpdateView, delete_exam, PrecinctUpdateView, ExamTypeList, ExamTypeCreateView, \
+    delete_exam_type, ExamTypeUpdateView, FloorUpdateView, RoomUpdateView, delete_room
 
 app_name = 'ticket'
 
@@ -36,13 +37,28 @@ urlpatterns = [
 
     path('delete-exam/<int:exam_id>/', delete_exam, name='delete_exam'),
 
+    # EXAM-TYPE
+    path('exam-type-list/', ExamTypeList.as_view(), name='exam_type_list'),
+
+    path('add-exam-type/', ExamTypeCreateView.as_view(), name='add_exam_type'),
+    path('edit-exam-type/<pk>/', ExamTypeUpdateView.as_view(), name='edit_exam_type'),
+
+    path('exam-type-delete/<int:exam_type_id>/', delete_exam_type, name='exam_type_delete'),
+
     # FLOOR
     path('floors-list/<int:precinct_id>/', FloorListView.as_view(), name='floor_list'),
+
     path('floor-create/', FloorCreateView.as_view(), name='floor_create'),
+
+    path('edit-floor/<pk>/', FloorUpdateView.as_view(), name='edit_floor'),
 
     path('delete-floor/<int:floor_id>/', delete_floor, name='delete_floor'),
 
     # ROOM
     path('rooms/<int:floor_id>/', RoomListView.as_view(), name='room_list'),
-    path('add-room/', RoomCreateView.as_view(), name='add_room')
+    path('add-room/', RoomCreateView.as_view(), name='add_room'),
+
+    path('edit-room/<pk>/', RoomUpdateView.as_view(), name='edit_room'),
+
+    path('delete-room/<int:room_id>/', delete_room, name='delete_room')
 ]

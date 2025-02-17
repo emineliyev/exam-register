@@ -1,5 +1,6 @@
 from django import forms
 from .models import Ticket, Precinct, Exam, Room, Floor, Grader, ExamType
+from django_select2.forms import Select2MultipleWidget
 
 
 class CreateTicketForm(forms.ModelForm):
@@ -26,25 +27,22 @@ class CreateTicketForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)  # Извлекаем пользователя и удаляем его из kwargs
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
         if user:
-            # Фильтруем только экзамены, созданные текущим пользователем
             self.fields['exam'].queryset = Exam.objects.filter(user=user)
 
-            # Если экзамен уже выбран, фильтруем связанные объекты
             if 'exam' in self.data:
                 try:
                     exam_id = int(self.data.get('exam'))
                     self.fields['precinct'].queryset = Precinct.objects.filter(exam_id=exam_id)
-                    self.fields['room'].queryset = Room.objects.filter(exam_id=exam_id)
-                    self.fields['floor'].queryset = Floor.objects.filter(exam_id=exam_id)
+                    self.fields['floor'].queryset = Floor.objects.filter(precinct__exam_id=exam_id)
+                    self.fields['room'].queryset = Room.objects.filter(exam_type__exam_id=exam_id)  # ✅ Исправлено
                     self.fields['exam_type'].queryset = ExamType.objects.filter(exam_id=exam_id)
                 except (ValueError, TypeError):
                     pass  # Если данные некорректные, оставляем пустые списки
             else:
-                # Если экзамен не выбран, делаем поля пустыми
                 self.fields['precinct'].queryset = Precinct.objects.none()
                 self.fields['room'].queryset = Room.objects.none()
                 self.fields['floor'].queryset = Floor.objects.none()
@@ -57,7 +55,7 @@ class CreateExamForm(forms.ModelForm):
         fields = ['name', 'date', 'time', 'status']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'date': forms.DateInput(format='%Y-%m-%d',attrs={'class': 'form-control', 'type': 'date'}),
+            'date': forms.DateInput(format='%Y-%m-%d', attrs={'class': 'form-control', 'type': 'date'}),
             'time': forms.TimeInput(format='%H:%M', attrs={'class': 'form-control', 'type': 'time'}),
         }
 
@@ -66,6 +64,25 @@ class CreateExamForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             self.fields['date'].initial = self.instance.date.strftime('%Y-%m-%d')
             self.fields['time'].initial = self.instance.time.strftime('%H:%M')
+
+
+class CreateExamTypeForm(forms.ModelForm):
+    class Meta:
+        model = ExamType
+        fields = ['name', 'grades', 'exam']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'grades': Select2MultipleWidget(attrs={'class': 'form-control'}),
+            'exam': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)  # Извлекаем пользователя и удаляем из kwargs
+        super().__init__(*args, **kwargs)
+
+        if user:
+            # Фильтруем экзамены, чтобы пользователь видел только свои
+            self.fields['exam'].queryset = Exam.objects.filter(user=user)
 
 
 class CreatePrecinctForm(forms.ModelForm):
@@ -125,7 +142,12 @@ class RoomCreateForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)
+        user = kwargs.pop('user', None)  # ✅ Извлекаем пользователя
         super().__init__(*args, **kwargs)
+
         if user:
+            # ✅ Фильтруем `Floor` по пользователю
             self.fields['floor'].queryset = Floor.objects.filter(user=user)
+
+            # ✅ Фильтруем `exam_type`, показывая только экзамены пользователя
+            self.fields['exam_type'].queryset = ExamType.objects.filter(exam__user=user)

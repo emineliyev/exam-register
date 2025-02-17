@@ -5,7 +5,7 @@
 {% endblock %}
 {% block content %}
 <div class="row">
-<h3 class="text-center text-secondary">Mərtəbələr cədvəli</h3>
+<h3 class="text-center text-secondary">Mərtəbə cədvəli</h3>
     <hr>
     <div class="col">
         <a href="{% url 'ticket:floor_create' %}" class="btn btn-outline-success btn-sm mb-2">
@@ -14,7 +14,6 @@
     </div>
     <div class="col-md-12">
         <div class="table-responsive">
-            <p>Məntəqə sayı: {{ ticket_counter }}</p>
             <table class="table table-hover text-center">
                 <thead>
                 <tr>
@@ -34,11 +33,7 @@
                         </a>
                     </td>
                     <td class="text-center">
-                        <a href="" target="_blank"
-                           class="btn btn-outline-success btn-sm me-2" type="button">
-                            <i class="fas fa-print" data-bs-toggle="tooltip" data-bss-tooltip="" title="Çap et"></i>
-                        </a>
-                        <a href="" class="btn btn-outline-primary btn-sm me-2"
+                        <a href="{% url 'ticket:edit_floor' floor.id %}" class="btn btn-outline-primary btn-sm me-2"
                            data-bs-toggle="tooltip" data-bss-tooltip="" type="button" title="Redakte et">
                             <i class="fas fa-edit"></i>
                         </a>

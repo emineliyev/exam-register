@@ -9,7 +9,8 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, ListView, UpdateView, DeleteView
 import openpyxl
 from ticket.filters import TicketFilter
-from ticket.forms import CreateTicketForm, CreatePrecinctForm, CreateExamForm, FloorCreateForm, RoomCreateForm
+from ticket.forms import CreateTicketForm, CreatePrecinctForm, CreateExamForm, FloorCreateForm, RoomCreateForm, \
+    CreateExamTypeForm
 from ticket.models import Ticket, Floor, Room, ExamType, Precinct, Exam
 import logging
 
@@ -22,14 +23,16 @@ class TicketListView(LoginRequiredMixin, ListView):
     context_object_name = 'tickets'
 
     def get_queryset(self):
-        queryset = Ticket.objects.filter(user=self.request.user)  # Фильтруем билеты по пользователю
-        self.filter = TicketFilter(self.request.GET, queryset=queryset)
+        """Фильтруем билеты по пользователю"""
+        queryset = Ticket.objects.filter(user=self.request.user)
+        self.filter = TicketFilter(self.request.GET, queryset=queryset, user=self.request.user)  # ✅ Передаем `user`
         return self.filter.qs
 
-    def get_context_data(self, *, object_list=None, **kwargs):
+    def get_context_data(self, **kwargs):
+        """Добавляем фильтр в контекст"""
         context = super().get_context_data(**kwargs)
         context['filter'] = self.filter
-        context['ticket_counter'] = Ticket.objects.filter(user=self.request.user).count()  # Считаем только свои билеты
+        context['ticket_counter'] = Ticket.objects.filter(user=self.request.user).count()
         return context
 
 
@@ -61,14 +64,34 @@ class TicketUpdate(LoginRequiredMixin, UpdateView):
     template_name = 'ticket/update.html'
     success_url = reverse_lazy('ticket:update')
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        ticket = self.object
+    def get_form_kwargs(self):
+        """Передаем текущего пользователя в форму"""
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user  # ✅ Передаем `user`
+        return kwargs
 
+    def get_context_data(self, **kwargs):
+        """Добавляем экзамены текущего пользователя и восстанавливаем выбранные значения"""
+        context = super().get_context_data(**kwargs)
+        ticket = self.object  # Получаем текущий `Ticket`
+
+        # ✅ Фильтруем только экзамены текущего пользователя
+        context['form'].fields['exam'].queryset = Exam.objects.filter(user=self.request.user)
+
+        # ✅ Устанавливаем выбранные значения обратно
+        context['form'].fields['exam'].initial = ticket.exam
+        context['form'].fields['exam_type'].queryset = ExamType.objects.filter(exam=ticket.exam)
         context['form'].fields['exam_type'].initial = ticket.exam_type
+
+        context['form'].fields['precinct'].queryset = Precinct.objects.filter(exam=ticket.exam)
         context['form'].fields['precinct'].initial = ticket.precinct
+
+        context['form'].fields['floor'].queryset = Floor.objects.filter(precinct=ticket.precinct)
         context['form'].fields['floor'].initial = ticket.floor
+
+        context['form'].fields['room'].queryset = Room.objects.filter(floor=ticket.floor, exam_type=ticket.exam_type)
         context['form'].fields['room'].initial = ticket.room
+
         context['form'].fields['seat_number'].initial = ticket.seat_number
 
         return context
@@ -239,11 +262,12 @@ class ExamListView(LoginRequiredMixin, ListView):
         return context
 
 
-class ExamCreateView(LoginRequiredMixin, CreateView):
+class ExamCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Exam
     form_class = CreateExamForm
     template_name = 'ticket/exam/add-exam.html'
-    success_url = reverse_lazy('ticket:index')
+    success_url = reverse_lazy('ticket:exam_list')
+    success_message = 'İmtahan uğurla əlavə edildi!'
 
     def form_valid(self, form):
         form.instance.user = self.request.user
@@ -259,6 +283,7 @@ class ExamUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     form_class = CreateExamForm  # ✅ Используем нашу форму
     template_name = 'ticket/exam/edit-exam.html'
     success_url = reverse_lazy('ticket:exam_list')
+    success_message = 'Məlumatlar uğurla yeniləndi!'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -271,6 +296,77 @@ def delete_exam(request, exam_id):
         exam = Exam.objects.get(id=exam_id)
 
         exam.delete()
+        return JsonResponse({"message": "Uğurla silindi"}, status=200)
+
+    return JsonResponse({"error": "Yanlış sorğu metodu"}, status=400)
+
+
+# EXAM-TYPE
+class ExamTypeList(LoginRequiredMixin, ListView):
+    model = ExamType
+    template_name = 'ticket/exam/exam-type-list.html'
+    context_object_name = 'exam_types'
+
+    def get_queryset(self):
+        return ExamType.objects.filter(user=self.request.user)
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data()
+        return context
+
+
+class ExamTypeCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
+    model = ExamType
+    form_class = CreateExamTypeForm
+    template_name = 'ticket/exam/add-exam-type.html'
+    success_url = reverse_lazy('ticket:exam_type_list')
+    success_message = 'İmtahan növü uğurla əlavə edildi!'
+
+    def get_form_kwargs(self):
+        """Передаем текущего пользователя в форму"""
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user  # Передаем user
+        return kwargs
+
+    def form_valid(self, form):
+        """Привязываем Precinct к пользователю"""
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        return context
+
+
+class ExamTypeUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = ExamType
+    form_class = CreateExamTypeForm
+    template_name = 'ticket/exam/edit-exam-type.html'
+    success_url = reverse_lazy('ticket:exam_type_list')
+    success_message = 'Məlumatlar uğurla yeniləndi!'
+
+    def get_form_kwargs(self):
+        """Передаем текущего пользователя в форму"""
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user  # Передаем user
+        return kwargs
+
+    def form_valid(self, form):
+        """Привязываем Precinct к пользователю"""
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        return context
+
+
+@login_required
+def delete_exam_type(request, exam_type_id):
+    if request.method == 'POST':
+        exam_type = ExamType.objects.get(id=exam_type_id)
+
+        exam_type.delete()
         return JsonResponse({"message": "Uğurla silindi"}, status=200)
 
     return JsonResponse({"error": "Yanlış sorğu metodu"}, status=400)
@@ -291,11 +387,12 @@ class PrecinctListView(LoginRequiredMixin, ListView):
         return context
 
 
-class CreatePrecinctView(LoginRequiredMixin, CreateView):
+class CreatePrecinctView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Precinct
     form_class = CreatePrecinctForm
     template_name = 'ticket/exam/add-precinct.html'
     success_url = reverse_lazy('ticket:precinct_list')
+    success_message = 'Məntəqə uğurla əlavə edildi!'
 
     def get_form_kwargs(self):
         """Передаем текущего пользователя в форму"""
@@ -313,11 +410,23 @@ class CreatePrecinctView(LoginRequiredMixin, CreateView):
         return context
 
 
-class PrecinctUpdateView(UpdateView):
+class PrecinctUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = Precinct
     form_class = CreatePrecinctForm
     template_name = 'ticket/exam/edit-precinct.html'
     success_url = reverse_lazy('ticket:precinct_list')
+    success_message = 'Məlumatlar uğurla yeniləndi!'
+
+    def get_form_kwargs(self):
+        """Передаем текущего пользователя в форму"""
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user  # Передаем user
+        return kwargs
+
+    def form_valid(self, form):
+        """Привязываем Precinct к пользователю"""
+        form.instance.user = self.request.user
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
@@ -353,11 +462,35 @@ class FloorListView(ListView):
         return context
 
 
-class FloorCreateView(LoginRequiredMixin, CreateView):
+class FloorCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Floor
     form_class = FloorCreateForm
     template_name = 'ticket/exam/add-floor.html'
     success_url = reverse_lazy('ticket:precinct_list')
+    success_message = 'Mərtəbə uğurla əlavə edildi!'
+
+    def get_form_kwargs(self):
+        """Передаем текущего пользователя в форму"""
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user  # Передаем user
+        return kwargs
+
+    def form_valid(self, form):
+        """Привязываем Precinct к пользователю"""
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        return context
+
+
+class FloorUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = Floor
+    form_class = FloorCreateForm
+    template_name = 'ticket/exam/edit-floor.html'
+    success_url = reverse_lazy('ticket:precinct_list')
+    success_message = 'Məlumatlar uğurla yeniləndi!'
 
     def get_form_kwargs(self):
         """Передаем текущего пользователя в форму"""
@@ -387,7 +520,7 @@ def delete_floor(request, floor_id):
 
 
 # ROOM
-class RoomListView(ListView):
+class RoomListView(LoginRequiredMixin, SuccessMessageMixin, ListView):
     model = Room
     template_name = 'ticket/exam/room-list.html'  # Шаблон для списка комнат
     context_object_name = 'rooms'
@@ -408,7 +541,8 @@ class RoomCreateView(CreateView):
     model = Room
     form_class = RoomCreateForm
     template_name = 'ticket/exam/add-room.html'
-    success_url = 'ticket/exam/room-list.html'
+    success_url = reverse_lazy('ticket:precinct_list')
+    success_message = 'Otaq uğurla əlavə edildi!'
 
     def get_form_kwargs(self):
         """Передаем текущего пользователя в форму"""
@@ -424,3 +558,37 @@ class RoomCreateView(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
         return context
+
+
+class RoomUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
+    model = Room
+    form_class = RoomCreateForm
+    template_name = 'ticket/exam/edit-room.html'
+    success_url = reverse_lazy('ticket:precinct_list')
+    success_message = 'Məlumatlar uğurla yeniləndi!'
+
+    def get_form_kwargs(self):
+        """Передаем текущего пользователя в форму"""
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user  # Передаем user
+        return kwargs
+
+    def form_valid(self, form):
+        """Привязываем Precinct к пользователю"""
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data()
+        return context
+
+
+@login_required
+def delete_room(request, room_id):
+    if request.method == 'POST':
+        room = Room.objects.get(id=room_id)
+
+        room.delete()
+        return JsonResponse({"message": "Uğurla silindi"}, status=200)
+
+    return JsonResponse({"error": "Yanlış sorğu metodu"}, status=400)

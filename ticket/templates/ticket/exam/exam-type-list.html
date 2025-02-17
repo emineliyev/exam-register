@@ -1,52 +1,54 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}
-    Məntəqə
+    İmtahan növləri cədvəli
 {% endblock %}
 {% block content %}
     <div class="row">
-        <h3 class="text-center text-secondary">Məntəqələr cədvəli</h3>
+        <h3 class="text-center text-secondary">İmtahan növləri cədvəli</h3>
         <hr>
         <div class="col">
-            <a href="{% url 'ticket:precinct_create' %}" class="btn btn-outline-success btn-sm mb-2">
-                Yeni məntəqə <i class="fas fa-user-plus"></i>
+            <a href="{% url 'ticket:add_exam_type' %}" class="btn btn-outline-success btn-sm mb-2">
+                Yeni imtahan növü <i class="fas fa-user-plus"></i>
             </a>
         </div>
         <div class="col-md-12">
             <div class="table-responsive">
+                <p>İmtahan növü sayı: {{ ticket_counter }}</p>
                 <table class="table table-hover text-center">
                     <thead>
                     <tr>
                         <th>#</th>
-                        <th>Ad</th>
-                        <th>Ünvan</th>
+                        <th>İmtahan növü</th>
+                        <th>Siniflər</th>
                         <th>İmtahan</th>
-                        <th>Mərtəbə</th>
                         <th class="text-center">Əməliyyatlar</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {% for precinct in precincts %}
+                    {% for exam_type in exam_types %}
                         <tr>
                             <td>{{ forloop.counter }}</td>
-                            <td>{{ precinct.name }}</td>
-                            <td>{{ precinct.address }}</td>
-                            <td>{{ precinct.exam }}</td>
+                            <td>{{ exam_type.name }}</td>
+
+
                             <td>
-                                <a href="{% url 'ticket:floor_list' precinct.id %}">
-                                    Mərtəbələr ({{ precinct.floor_count }})
-                                </a>
+                                {% for grade in exam_type.grades.all %}
+                                    {{ grade }},
+                                {% endfor %}
                             </td>
 
+                            <td>{{ exam_type.exam }}</td>
                             <td class="text-center">
-                                <a href="{% url 'ticket:edit_precinct' precinct.id %}" class="btn btn-outline-primary btn-sm me-2"
+                                <a href="{% url 'ticket:edit_exam_type' exam_type.id %}"
+                                   class="btn btn-outline-primary btn-sm me-2"
                                    data-bs-toggle="tooltip" data-bss-tooltip="" type="button" title="Redakte et">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <a href="{% url 'ticket:delete_precinct' precinct.id %}"
+                                <a href="{% url 'ticket:exam_type_delete' exam_type.id %}"
                                    class="btn btn-outline-danger btn-sm me-2 delete-ticket"
-                                   data-id="{{ precinct.id }}"
-                                   data-url="{% url 'ticket:delete_precinct' precinct.id %}"
+                                   data-id="{{ exam.id }}"
+                                   data-url="{% url 'ticket:exam_type_delete' exam_type.id %}"
                                    title="Sil">
                                     <i class="fas fa-trash"></i>
                                 </a>
@@ -58,4 +60,6 @@
             </div>
         </div>
     </div>
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 {% endblock %}

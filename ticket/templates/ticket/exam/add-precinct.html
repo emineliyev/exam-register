@@ -7,12 +7,6 @@
 <div class="row">
 <h3 class="text-center text-secondary">Yeni məntəqə</h3>
     <hr>
-    <nav style="--bs-breadcrumb-divider: '';" aria-label="breadcrumb">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{% url 'ticket:precinct_list' %}">Məntəqələr</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Yeni məntəqə</li>
-      </ol>
-    </nav>
     <div class="col-md-12">
         <form method="post">
             {% csrf_token %}
@@ -22,11 +16,11 @@
                         {{ form.name }}
                     </label>
 
-                    <label class="form-label" for="{{ form.address.id_for_label }}">Ünvan
+                    <label class="form-label" for="{{ form.address.id_for_label }}">Məntəqə ünvan
                         {{ form.address }}
                     </label>
 
-                    <label class="form-label" for="{{ form.exam.id_for_label }}">İmtahan seçin
+                    <label class="form-label" for="{{ form.exam.id_for_label }}">İmtahan seç
                         {{ form.exam }}
                     </label>
                     <div>

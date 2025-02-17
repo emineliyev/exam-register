@@ -1,13 +1,19 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}
-	Yeni mərtəbə
+	Mərtəbə redakte
 {% endblock %}
 {% block content %}
 
 <div class="row">
-<h3 class="text-center text-secondary">Yeni mərtəbə</h3>
+<h3 class="text-center text-secondary">Mərtəbə redakte</h3>
     <hr>
+    <nav style="--bs-breadcrumb-divider: '';" aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'ticket:precinct_list' %}">Mərtəbələr</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Mərtəbə redakte</li>
+      </ol>
+    </nav>
     <div class="col-md-12">
         <form method="post">
             {% csrf_token %}
@@ -17,7 +23,7 @@
                         {{ form.name }}
                     </label>
 
-                    <label class="form-label" for="{{ form.precinct.id_for_label }}">Məntəqə seç
+                    <label class="form-label" for="{{ form.precinct.id_for_label }}">Məntəqə
                         {{ form.precinct }}
                     </label>
                     <div>
