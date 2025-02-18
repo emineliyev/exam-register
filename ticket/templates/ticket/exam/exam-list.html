@@ -5,7 +5,7 @@
 {% endblock %}
 {% block content %}
     <div class="row">
-        <h3 class="text-center text-secondary">İmtahanlar cədvəli</h3>
+        <h3 class="text-center text-secondary">İmtahan cədvəli</h3>
         <hr>
         <div class="col">
             <a href="{% url 'ticket:exam_create' %}" class="btn btn-outline-success btn-sm mb-2">
@@ -25,9 +25,9 @@
                         <th class="text-center">Əməliyyatlar</th>
                     </tr>
                     </thead>
-                    <tbody id="exam-list">  <!-- ✅ Добавляем ID для Drag & Drop -->
+                    <tbody id="exam-list">
                     {% for exam in exams %}
-                        <tr data-exam-id="{{ exam.id }}" class="draggable-row">  <!-- ✅ Добавляем data-exam-id -->
+                        <tr data-exam-id="{{ exam.id }}" class="draggable-row">
                             <td class="order-column">{{ exam.order }}</td>
                             <td>{{ exam.name }}</td>
                             <td>{{ exam.date|date:"d.m.Y" }} - {{ exam.time }}</td>

@@ -18,9 +18,9 @@
     <div class="container">
         <a class="navbar-brand d-flex align-items-center" href="{% url 'ticket:index' %}">
             {% if user.profile.avatar %}
-                <img width="100" src="{{ user.profile.avatar.url }}" alt="Фото профиля" class="profile-avatar">
+                <img width="50" height="50" src="{{ user.profile.avatar.url }}" alt="Profil şəkli" class="profile-avatar">
             {% else %}
-                <img src="/media/avatars/default.jpg" class="img-thumbnail" alt="...">
+                <img src="{% static 'assets/img/default.jpg' %}" class="img-thumbnail" alt="Profil şəkli">
             {% endif %}
         </a>
         <button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-1"><span
@@ -36,6 +36,7 @@
                 </li>
             </ul>
             </ul>
+            <span class="me-2">{{ user.profile.first_name }} {{ user.profile.last_name }}</span>
             <a href="{% url 'account:profile' %}" class="btn btn-primary me-2">Profil</a>
             <a href="{% url 'account:logout' %}" class="btn btn-danger" type="button">Çıxış</a>
         </div>

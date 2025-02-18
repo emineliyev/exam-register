@@ -18,22 +18,93 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+# class TicketListView(LoginRequiredMixin, ListView):
+#     model = Ticket
+#     template_name = 'ticket/index.html'
+#     context_object_name = 'tickets'
+#
+#     def get_queryset(self):
+#         """Фильтруем билеты по пользователю и выбранному экзамену"""
+#         queryset = Ticket.objects.filter(user=self.request.user)
+#
+#         exams = Exam.objects.filter(user=self.request.user).order_by('order')
+#         first_exam = exams.first() if exams.exists() else None
+#
+#         # Если в запросе нет exam, устанавливаем первый
+#         if 'exam' not in self.request.GET and first_exam:
+#             self.request.GET = self.request.GET.copy()
+#             self.request.GET['exam'] = first_exam.id
+#
+#         self.filter = TicketFilter(self.request.GET, queryset=queryset, user=self.request.user)
+#         return self.filter.qs
+#
+#     def get_context_data(self, **kwargs):
+#         """Добавляем фильтр и количество билетов в контекст"""
+#         context = super().get_context_data(**kwargs)
+#         context['filter'] = self.filter
+#
+#         # ✅ Определяем выбранный экзамен
+#         selected_exam = self.request.GET.get('exam')
+#         if selected_exam:
+#             ticket_count = Ticket.objects.filter(user=self.request.user, exam_id=selected_exam).count()
+#         else:
+#             ticket_count = Ticket.objects.filter(user=self.request.user,
+#                                                  exam=self.filter.form.initial.get('exam')).count()
+#
+#         context['ticket_counter'] = ticket_count  # ✅ Количество билетов для выбранного экзамена
+#         return context
+
+
 class TicketListView(LoginRequiredMixin, ListView):
     model = Ticket
     template_name = 'ticket/index.html'
     context_object_name = 'tickets'
 
     def get_queryset(self):
-        """Фильтруем билеты по пользователю"""
-        queryset = Ticket.objects.filter(user=self.request.user)
-        self.filter = TicketFilter(self.request.GET, queryset=queryset, user=self.request.user)
+        """Фильтруем билеты по пользователю и загружаем связанные экзамены за один запрос"""
+        user = self.request.user
+
+        # ✅ Используем `select_related`, чтобы избежать лишних SQL-запросов
+        queryset = Ticket.objects.filter(user=user).select_related('exam', 'exam_type', 'grader')
+
+        exams = list(Exam.objects.filter(user=user).order_by('order'))
+        first_exam = exams[0] if exams else None  # ✅ Загружаем экзамен **без повторных SQL-запросов**
+
+        # ✅ Если `exam` не указан в запросе, подставляем первый доступный экзамен
+        selected_exam = self.request.GET.get('exam') or (first_exam.id if first_exam else None)
+
+        if selected_exam:
+            queryset = queryset.filter(exam_id=selected_exam)
+
+        # ✅ Создаем `TicketFilter` **один раз** без дублирования SQL-запросов
+        self.filter = TicketFilter(self.request.GET, queryset=queryset, user=user)
+
         return self.filter.qs
 
     def get_context_data(self, **kwargs):
-        """Добавляем фильтр в контекст"""
+        """Добавляем фильтр и загружаем связанные данные **одним SQL-запросом**"""
         context = super().get_context_data(**kwargs)
-        context['filter'] = self.filter
-        context['ticket_counter'] = Ticket.objects.filter(user=self.request.user).count()
+
+        user = self.request.user
+
+        # ✅ Загружаем экзамены **одним SQL-запросом**
+        exams = list(Exam.objects.filter(user=user).order_by('order'))
+
+        # ✅ Определяем выбранный экзамен **без повторных SQL-запросов**
+        first_exam = exams[0] if exams else None
+        selected_exam_id = self.request.GET.get('exam') or (first_exam.id if first_exam else None)
+
+        # ✅ Подсчитываем количество билетов **одним SQL-запросом**
+        ticket_count = Ticket.objects.filter(user=user, exam_id=selected_exam_id).count() if selected_exam_id else 0
+
+        # ✅ Передаем в контекст **без повторных SQL-запросов**
+        context.update({
+            'filter': self.filter,
+            'ticket_counter': ticket_count,
+            'exams': exams,
+            'selected_exam_id': selected_exam_id,
+        })
+
         return context
 
 
@@ -523,6 +594,7 @@ class FloorUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data()
         return context
+
 
 
 @login_required

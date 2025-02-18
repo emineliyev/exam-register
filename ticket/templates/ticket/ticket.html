@@ -8,10 +8,10 @@
         <div class="col-12">
             <h5 class="text-center text-white bg-secondary border rounded-0 pt-2 pb-2">İMTAHANA BURAXILIŞ VƏRƏQİ</h5>
             <div class="d-flex justify-content-between">
-                            {% if user.profile.avatar %}
-                <img width="100" src="{{ user.profile.avatar.url }}" alt="Фото профиля" class="profile-avatar">
+                {% if user.profile.avatar %}
+                <img width="120" height="120" src="{{ user.profile.avatar.url }}" alt="Profil şəkli" class="profile-avatar">
             {% else %}
-                <img src="/media/avatars/default.jpg" class="img-thumbnail" alt="...">
+                <img src="{% static 'assets/img/default.jpg' %}" class="img-thumbnail" alt="Profil şəkli">
             {% endif %}
                 <div class="border-2 p-2 me-2">
                     <h4 class="me-5 mt-2">{{ ticket.exam.name }}</h4>
@@ -35,7 +35,7 @@
                         </tr>
                         <tr>
                             <td>Soyad: {{ ticket.last_name }}</td>
-                            <td>Mətəbə: {{ ticket.floor.name }}</td>
+                            <td>Mərtəbə: {{ ticket.floor.name }}</td>
                         </tr>
                         <tr>
                             <td>Sinif: {{ ticket.grader }}</td>

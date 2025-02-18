@@ -66,7 +66,7 @@ class Precinct(models.Model):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE, verbose_name="İmtahan")
 
     def __str__(self):
-        return f"{self.name}"
+        return f"{self.name} - {self.exam}"
 
     class Meta:
         verbose_name = 'Məntəqə'
@@ -79,7 +79,7 @@ class Floor(models.Model):
     precinct = models.ForeignKey(Precinct, on_delete=models.CASCADE, verbose_name="Məntəqə")
 
     def __str__(self):
-        return f"{self.name}"
+        return f"{self.name} - {self.precinct}"
 
     class Meta:
         verbose_name = 'Mərtəbə'
