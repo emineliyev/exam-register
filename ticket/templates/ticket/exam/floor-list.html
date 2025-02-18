@@ -29,7 +29,7 @@
                     <td>{{ forloop.counter }}</td>
                     <td>{{ floor.name }}</td>
                     <td>
-                        <a href="{% url 'ticket:room_list' floor.id %}">Otaqlar
+                        <a href="{% url 'ticket:room_list' floor.id %}">Otaqlar ({{ floor.rooms_count }})
                         </a>
                     </td>
                     <td class="text-center">

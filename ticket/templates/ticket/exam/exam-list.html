@@ -5,7 +5,7 @@
 {% endblock %}
 {% block content %}
     <div class="row">
-    <h3 class="text-center text-secondary">İmtahanlar cədvəli</h3>
+        <h3 class="text-center text-secondary">İmtahanlar cədvəli</h3>
         <hr>
         <div class="col">
             <a href="{% url 'ticket:exam_create' %}" class="btn btn-outline-success btn-sm mb-2">
@@ -14,30 +14,31 @@
         </div>
         <div class="col-md-12">
             <div class="table-responsive">
-                <p>İmtahan sayı: {{ ticket_counter }}</p>
+                <p>İmtahan sayı: {{ exams.count }}</p>
                 <table class="table table-hover text-center">
                     <thead>
                     <tr>
-                        <th>#</th>
+                        <th>Sırası</th>
                         <th>İmtahan</th>
                         <th>Tarix</th>
                         <th>Status</th>
                         <th class="text-center">Əməliyyatlar</th>
                     </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="exam-list">  <!-- ✅ Добавляем ID для Drag & Drop -->
                     {% for exam in exams %}
-                        <tr>
-                            <td>{{ forloop.counter }}</td>
+                        <tr data-exam-id="{{ exam.id }}" class="draggable-row">  <!-- ✅ Добавляем data-exam-id -->
+                            <td class="order-column">{{ exam.order }}</td>
                             <td>{{ exam.name }}</td>
                             <td>{{ exam.date|date:"d.m.Y" }} - {{ exam.time }}</td>
                             {% if exam.status %}
-                            <td class="text-success"><strong>Aktiv</strong></td>
+                                <td class="text-success"><strong>Aktiv</strong></td>
                             {% else %}
-                            <td class="text-danger"><strong>Passiv</strong></td>
+                                <td class="text-danger"><strong>Passiv</strong></td>
                             {% endif %}
                             <td class="text-center">
-                                <a href="{% url 'ticket:edit_exam' exam.id %}" class="btn btn-outline-primary btn-sm me-2"
+                                <a href="{% url 'ticket:edit_exam' exam.id %}"
+                                   class="btn btn-outline-primary btn-sm me-2"
                                    data-bs-toggle="tooltip" data-bss-tooltip="" type="button" title="Redakte et">
                                     <i class="fas fa-edit"></i>
                                 </a>
@@ -56,6 +57,35 @@
             </div>
         </div>
     </div>
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function () {
+            $("#exam-list").sortable({
+                axis: "y",  // ✅ Разрешаем перемещение только по вертикали
+                update: function (event, ui) {
+                    let exam_order = [];
+                    $("#exam-list tr").each(function (index) {
+                        let examId = $(this).data("exam-id");
+                        exam_order.push({id: examId, order: index + 1});
+                        $(this).find(".order-column").text(index + 1);  // ✅ Обновляем номера в таблице
+                    });
+
+                    // Отправляем новый порядок экзаменов на сервер через AJAX
+                    $.ajax({
+                        url: "{% url 'ticket:exam_reorder' %}",  // ✅ URL для изменения порядка
+                        type: "POST",
+                        data: {
+                            exam_order: JSON.stringify(exam_order),
+                            csrfmiddlewaretoken: "{{ csrf_token }}"
+                        },
+                        success: function (response) {
+                            console.log("Pорядок успешно обновлен");
+                        },
+                        error: function (error) {
+                            console.error("Ошибка обновления", error);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
 {% endblock %}

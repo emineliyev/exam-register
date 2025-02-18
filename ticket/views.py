@@ -1,4 +1,5 @@
-from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
+import json
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
@@ -25,7 +26,7 @@ class TicketListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         """Фильтруем билеты по пользователю"""
         queryset = Ticket.objects.filter(user=self.request.user)
-        self.filter = TicketFilter(self.request.GET, queryset=queryset, user=self.request.user)  # ✅ Передаем `user`
+        self.filter = TicketFilter(self.request.GET, queryset=queryset, user=self.request.user)
         return self.filter.qs
 
     def get_context_data(self, **kwargs):
@@ -186,7 +187,7 @@ def delete_ticket(request, ticket_id):
 
 @login_required
 def get_report(request):
-    exams = Exam.objects.all()
+    exams = Exam.objects.filter(user=request.user)
     context = {
         'exams': exams
     }
@@ -255,7 +256,7 @@ class ExamListView(LoginRequiredMixin, ListView):
     context_object_name = 'exams'
 
     def get_queryset(self):
-        return Exam.objects.filter(user=self.request.user)
+        return Exam.objects.filter(user=self.request.user).order_by('order')
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data()
@@ -288,6 +289,22 @@ class ExamUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return context
+
+
+@csrf_exempt  # ✅ Отключаем CSRF для AJAX-запроса (не обязательно, если передаем `csrfmiddlewaretoken`)
+def reorder_exams(request):
+    """Обновляет порядок экзаменов на основе данных из AJAX"""
+    if request.method == "POST":
+        try:
+            data = json.loads(request.POST.get("exam_order"))
+            for item in data:
+                exam = Exam.objects.get(id=item["id"])
+                exam.order = item["order"]
+                exam.save()
+            return JsonResponse({"message": "Pорядок успешно обновлен"}, status=200)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse({"error": "Неправильный метод запроса"}, status=400)
 
 
 @login_required
@@ -453,7 +470,7 @@ class FloorListView(ListView):
     def get_queryset(self):
         """Фильтруем этажи (Floor) только по выбранному Precinct"""
         precinct_id = self.kwargs.get('precinct_id')
-        return Floor.objects.filter(precinct_id=precinct_id)
+        return Floor.objects.filter(precinct_id=precinct_id).annotate(rooms_count=Count('room'))
 
     def get_context_data(self, **kwargs):
         """Добавляем объект Precinct в контекст, чтобы вывести его в шаблоне"""

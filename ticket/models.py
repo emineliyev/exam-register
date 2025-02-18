@@ -25,6 +25,17 @@ class Exam(models.Model):
     status = models.BooleanField(default=False, verbose_name="Status")
     order = models.PositiveIntegerField(default=0, blank=False, null=False)
 
+    def save(self, *args, **kwargs):
+        """Автоматически увеличивает order при создании нового экзамена"""
+        if not self.pk:  # Только при создании нового экзамена
+            last_exam = Exam.objects.filter(user=self.user).order_by('-order').first()
+            if last_exam:
+                self.order = last_exam.order + 1
+            else:
+                self.order = 1  # Если это первый экзамен пользователя, начинаем с 1
+
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.name}"
 

@@ -24,7 +24,7 @@ class TicketFilter(django_filters.FilterSet):
     )
 
     exam_type = django_filters.ModelChoiceFilter(
-        queryset=ExamType.objects.all(),
+        queryset=ExamType.objects.none(), # ❌ Начинаем с пустого списка
         label="İmtahan növü",
         widget=forms.Select(attrs={'class': 'form-control', 'placeholder': 'First Name'})
     )
@@ -40,3 +40,4 @@ class TicketFilter(django_filters.FilterSet):
 
         if user:
             self.filters['exam'].queryset = Exam.objects.filter(user=user)  # ✅ Фильтруем `Exam`
+            self.filters['exam_type'].queryset = ExamType.objects.filter(user=user)  # ✅ Фильтруем `Exam`

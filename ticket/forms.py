@@ -38,7 +38,7 @@ class CreateTicketForm(forms.ModelForm):
                     exam_id = int(self.data.get('exam'))
                     self.fields['precinct'].queryset = Precinct.objects.filter(exam_id=exam_id)
                     self.fields['floor'].queryset = Floor.objects.filter(precinct__exam_id=exam_id)
-                    self.fields['room'].queryset = Room.objects.filter(exam_type__exam_id=exam_id)  # ✅ Исправлено
+                    self.fields['room'].queryset = Room.objects.filter(exam_type__exam_id=exam_id)
                     self.fields['exam_type'].queryset = ExamType.objects.filter(exam_id=exam_id)
                 except (ValueError, TypeError):
                     pass  # Если данные некорректные, оставляем пустые списки

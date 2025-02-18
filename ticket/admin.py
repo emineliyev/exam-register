@@ -19,7 +19,7 @@ class GraderAdmin(admin.ModelAdmin):
 
 @admin.register(Exam)
 class ExamAdmin(SortableAdminMixin, admin.ModelAdmin):
-    list_display = ('id', 'name', 'order')
+    list_display = ('id', 'name',)
 
 
 @admin.register(ExamType)

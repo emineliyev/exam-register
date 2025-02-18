@@ -3,7 +3,7 @@ from .views import TicketListView, CreateTicketView, get_ticket, load_exam_type,
     load_seats, delete_ticket, TicketUpdate, get_report, load_exam_type_report, export_to_excel, PrecinctListView, \
     CreatePrecinctView, ExamListView, ExamCreateView, FloorCreateView, FloorListView, delete_precinct, RoomListView, \
     delete_floor, RoomCreateView, ExamUpdateView, delete_exam, PrecinctUpdateView, ExamTypeList, ExamTypeCreateView, \
-    delete_exam_type, ExamTypeUpdateView, FloorUpdateView, RoomUpdateView, delete_room
+    delete_exam_type, ExamTypeUpdateView, FloorUpdateView, RoomUpdateView, delete_room, reorder_exams
 
 app_name = 'ticket'
 
@@ -36,6 +36,8 @@ urlpatterns = [
     path('edit-exam/<pk>/', ExamUpdateView.as_view(), name='edit_exam'),
 
     path('delete-exam/<int:exam_id>/', delete_exam, name='delete_exam'),
+
+    path("exam/reorder/", reorder_exams, name="exam_reorder"),  # ✅ URL для Drag & Drop
 
     # EXAM-TYPE
     path('exam-type-list/', ExamTypeList.as_view(), name='exam_type_list'),
